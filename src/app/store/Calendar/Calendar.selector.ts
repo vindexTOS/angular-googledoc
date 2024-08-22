@@ -17,3 +17,11 @@ export const GetSelecctedDate = createSelector(
     return state.selectedCalendarDate;
   }
 );
+
+
+export const GetSetTime = createSelector(
+  CalendarLocalStorageSelector, 
+  (state)=>{ 
+     return state.setTime
+  }
+)

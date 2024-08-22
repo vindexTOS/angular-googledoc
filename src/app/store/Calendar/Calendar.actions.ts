@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { CalendarDateType, CalendarType } from '../../types/calendar-types';
+import { CalendarDateType, CalendarType, SetTimeType } from '../../types/calendar-types';
 
 export const GetCalendarData = createAction(
   '[get calendar data from local storage]',
@@ -12,6 +12,11 @@ export const SelectCalendarDate = createAction(
   props<{selectedCalendarDate:CalendarDateType['date']}>()
 )
 
+
+export const SetTimeAction =  createAction(
+   "[set time]" , 
+    props<{setTime:SetTimeType  }>()
+)
  
  
 

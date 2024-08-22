@@ -10,3 +10,10 @@ export interface CalendarType extends   CalendarDateType {
   description: string;
 
 }
+
+
+export interface SetTimeType  {
+
+   startTime:string 
+   endTime:string
+}

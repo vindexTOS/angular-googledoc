@@ -29,16 +29,7 @@ import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
     <div class="calendar-container">
       <mat-calendar [(selected)]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
 
-      <mat-form-field appearance="fill">
-        <mat-label>Choose a start time</mat-label>
-        <input matInput type="time" [(ngModel)]="startTime" />
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Choose a end time</mat-label>
-        <input matInput type="time" [(ngModel)]="endTime" />
-      </mat-form-field>
-
-      <button mat-raised-button color="primary" (click)="onAdd()">Add</button>
+      
     </div>
   `,
   styleUrls: ['./calendar.component.scss'],
