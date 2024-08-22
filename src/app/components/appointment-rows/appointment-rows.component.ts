@@ -29,7 +29,7 @@ import { BehaviorSubject, combineLatest, map } from 'rxjs';
   
   <div class="square"  (dblclick)=" openModal()"  [ngStyle]="overLayStyle">
   <div class='time-wrapper'> 
-    <p>{{ savedAppointment.title}}</p>
+    <p>{{ savedAppointment?.title ? savedAppointment?.title : "No Title"}}</p>
          <p class='toptime'> {{startTime }} -  {{endTime}}</p>
         </div>
     <div class="resizer top" (mousedown)="onMouseDownTop($event)"></div>
@@ -231,24 +231,42 @@ export class AppointmentRowsComponent {
   }
 
   private calculateTimeSlots() {
-    if (!this.container) return;
-
+    if (!this.container || !this.el) return;
+  
     const containerRect = this.container.nativeElement.getBoundingClientRect();
     const square = this.el.nativeElement.querySelector('.square') as HTMLElement;
-
+  
+    if (!square) return;
+  
     const squareTop = square.getBoundingClientRect().top - containerRect.top;
-    const squareBottom = squareTop + square.offsetHeight;
-
-    const topSlotIndex = Math.floor((squareTop / containerRect.height) * this.timeSlots.length);
-    const bottomSlotIndex = Math.ceil((squareBottom / containerRect.height) * this.timeSlots.length);
-
-    const topTimeSlot = this.timeSlots[topSlotIndex] || 'Out of range';
-    const bottomTimeSlot = this.timeSlots[bottomSlotIndex] || 'Out of range';
-
-    this.startTime = topTimeSlot;
-    this.endTime = bottomTimeSlot;
-
-    let setTime = {
+    const squareBottom = square.getBoundingClientRect().bottom - containerRect.top;
+  
+    const containerHeight = containerRect.height;
+    const slotHeight = containerHeight / this.timeSlots.length;
+  
+     const topSlotIndex = Math.max(0, Math.min(Math.floor(squareTop / slotHeight), this.timeSlots.length - 1));
+    const bottomSlotIndex = Math.max(0, Math.min(Math.ceil(squareBottom / slotHeight), this.timeSlots.length - 1));
+  
+     console.log('Container Height:', containerHeight);
+    console.log('Slot Height:', slotHeight);
+    console.log('Top Slot Index:', topSlotIndex);
+    console.log('Bottom Slot Index:', bottomSlotIndex);
+  
+     const adjustTime = (time: string, hours: number) => {
+      const [hour, minute] = time.split(':').map(Number);
+      const date = new Date();
+      date.setHours(hour - hours, minute);
+      return date.toTimeString().substr(0, 5);
+    };
+  
+    this.startTime = adjustTime(this.timeSlots[topSlotIndex] || 'Out of range', 2);
+    this.endTime = adjustTime(this.timeSlots[bottomSlotIndex] || 'Out of range', 3);
+  
+ 
+    console.log('Start Time:', this.startTime);
+    console.log('End Time:', this.endTime);
+  
+     const setTime = {
       setTime: {
         startTime: this.startTime,
         endTime: this.endTime,
@@ -256,7 +274,7 @@ export class AppointmentRowsComponent {
     };
     this.store.dispatch(SetTimeAction(setTime));
   }
-
+  
   trackByIndex(index: number) {
     return index;
   }
