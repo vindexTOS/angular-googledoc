@@ -1,11 +1,31 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
+ 
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { CalendarModalComponent } from '../calendar-modal/calendar-modal.component';
+import { MatDialog } from '@angular/material/dialog';
+import { Store } from '@ngrx/store';
+ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { GetLocalCalendarData } from '../../store/Calendar/Calendar.selector';
+import { CalendarType } from '../../types/calendar-types';
+import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
 @Component({
   selector: 'app-appointment-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,  
+       MatDatepickerModule,
+    MatNativeDateModule,
+    MatInputModule,
+    MatFormFieldModule,
+   
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatSnackBarModule,],
   template: `
     <div class="modal-backdrop" (click)="closeModal()"></div>
     <div class="modal">
@@ -41,7 +61,14 @@ import { FormsModule } from '@angular/forms';
             required
           />
         </div>
-        
+        <mat-form-field appearance="fill">
+        <mat-label>Choose a start time</mat-label>
+        <input matInput type="time" [(ngModel)]="appointment.startTime" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Choose a end time</mat-label>
+        <input matInput type="time" [(ngModel)]="appointment.endTime" />
+      </mat-form-field>
         <div class="modal-actions">
           <button type="button" (click)="closeModal()">Cancel</button>
           <button type="submit">Save</button>
@@ -55,7 +82,9 @@ export class AppointmentModalComponent {
   @Input() appointment = {
     title: '',
     description: '',
-    time: ''
+    time: '',
+    startTime:null,
+    endTime:null
   };
 
   @Output() save = new EventEmitter<any>();
@@ -68,4 +97,7 @@ export class AppointmentModalComponent {
   closeModal() {
     this.close.emit();
   }
+
+  
+  
 }

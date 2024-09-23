@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, model, Renderer2, ViewChild } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { CalendarModalComponent } from '../calendar-modal/calendar-modal.component';
 import { Store } from '@ngrx/store';
 import { SetTimeAction } from '../../store/Calendar/Calendar.actions';
-import { CalendarType } from '../../types/calendar-types';
+import { CalendarType, SetTimeType } from '../../types/calendar-types';
 import { GetLocalCalendarData, GetSelecctedDate } from '../../store/Calendar/Calendar.selector';
 import { Data } from '@angular/router';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
@@ -13,39 +13,16 @@ import { BehaviorSubject, combineLatest, map } from 'rxjs';
   selector: 'app-appointment-rows',
   standalone: true,
   template: `
-    <div class="time-slots-container" #container>
-      <div style="height: 100px; width:100%;" >
-        @if( isClick || savedAppointment !== null && savedAppointment.date){
-          <div class="parent-container" cdkDrag        cdkDragLockAxis="y">
-     
-  <div class="draggable" 
-       cdkDrag
-       cdkDragLockAxis="y"
-       (cdkDragStarted)="onDragStarted($event)"
-       (cdkDragMoved)="onDragMoved($event)"
-       (cdkDragEnded)="onDragEnded($event)">
-      
-  </div>
+<div class="time-slots-container" #container style="display: flex; flex-direction: column; width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 50px; background-color: rgb(39, 39, 39); position: relative;">
   
-  <div class="square"  (dblclick)=" openModal()"  [ngStyle]="overLayStyle">
-  <div class='time-wrapper'> 
-    <p>{{ savedAppointment?.title ? savedAppointment?.title : "No Title"}}</p>
-         <p class='toptime'> {{startTime }} -  {{endTime}}</p>
-        </div>
-    <div class="resizer top" (mousedown)="onMouseDownTop($event)"></div>
-  
-    <div class="resizer bottom" (mousedown)="onMouseDownBottom($event)"></div>
-  </div>
 
+  <div *ngFor="let slot of timeSlots; let i = index" 
+       (mousedown)="onClickRow($event, i)" 
+       class="time-slot" 
+       style="height: 50px; border-bottom: 1px solid #e0e0e0; padding-left: 10px; display: flex; align-items: center; font-family: Arial, sans-serif; font-size: 14px; color: #ffffff; cursor: pointer;">
+    {{slot}}
+  </div>
 </div>
-        }
-      </div> 
-      @for ( slot of timeSlots; track slot ;let i = $index) {
-        <div (mousedown)="onClickRow($event, i)" class="time-slot">
-          {{slot}}
-        </div>
-      }
-    </div>
   `,
   styleUrls: ['./appointment-rows.component.scss'],
   imports: [CommonModule, DragDropModule,CalendarModalComponent]
@@ -69,7 +46,7 @@ export class AppointmentRowsComponent {
   startTime = '';
   endTime = '';
   savedAppointment: any = null;
-
+   savedAppointments:any = []
   private selectedCalendarSubject = new BehaviorSubject<Date | null>(this.selectedCalendar);
   private dataFromLocalStorageSubject = new BehaviorSubject<CalendarType[]>(this.dataFromLocalStorage);
 
@@ -108,6 +85,10 @@ export class AppointmentRowsComponent {
   }
 
   ngOnInit() {
+    const saved = localStorage.getItem('appointments');
+    if (saved) {
+      this.savedAppointments = JSON.parse(saved);
+    }
     this.generateTimeSlots();
   }
   ngAfterViewInit() {
@@ -126,21 +107,31 @@ export class AppointmentRowsComponent {
     this.overLayStyle.top = `${topPosition}px`;
     this.overLayStyle.height = `${squareHeight}px`;
   }
-
   openModal(): void {
     const dialogRef = this.dialog.open(CalendarModalComponent, {
       width: '1200px',
-      data: { date: this.selectedCalendar, time: this.startTime, title:this.savedAppointment?.title, description:this.savedAppointment?.description }
+      data: { 
+        date: this.selectedCalendar, 
+        time: this.startTime, 
+        title: this.savedAppointment?.title, 
+        description: this.savedAppointment?.description,
+        position: {
+          top: this.savedAppointment?.position?.top,
+          bottom: this.savedAppointment?.position?.bottom,
+        } 
+      }
     });
-
+  
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         console.log('The dialog was closed with data:', result);
+         this.calculateTimeSlots()
       }
     });
   }
 
   private generateTimeSlots(): void {
+ 
     this.timeSlots = [];
     for (let hour = 0; hour < 24; hour++) {
       this.timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
@@ -148,13 +139,13 @@ export class AppointmentRowsComponent {
   }
 
   onDragStarted(event: any) {
-    const parentContainer = event.source.element.nativeElement.parentElement;
+     const parentContainer = event.source.element.nativeElement.parentElement;
     this.startY = parentContainer.getBoundingClientRect().top;
     this.initialHeight = parentContainer.offsetHeight;
   }
 
   onDragMoved(event: any) {
-    const parentContainer = event.source.element.nativeElement.parentElement;
+     const parentContainer = event.source.element.nativeElement.parentElement;
     const deltaY = event.pointerPosition.y - this.startY;
     const newHeight = this.initialHeight + deltaY;
     parentContainer.style.height = `${newHeight}px`;
@@ -164,10 +155,12 @@ export class AppointmentRowsComponent {
     this.startY = 0;
     this.initialHeight = 0;
     this.calculateTimeSlots();
+  
   }
 
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
+    console.log("4")
     const square = this.el.nativeElement.querySelector('.square');
     if (this.isResizingBottom) {
       this.resizeBottom(event, square);
@@ -178,12 +171,13 @@ export class AppointmentRowsComponent {
 
   @HostListener('document:mouseup')
   onMouseUp() {
+     
     this.isResizingTop = false;
     this.isResizingBottom = false;
-    this.calculateTimeSlots();
+    // this.calculateTimeSlots();
   }
 
-  onMouseDownTop(event: MouseEvent) {
+  onMouseDownTop(event: MouseEvent) {    console.log("4")
     event.stopPropagation();
     const square = this.el.nativeElement.querySelector('.square') as HTMLElement;
     this.startY = event.clientY;
@@ -193,20 +187,20 @@ export class AppointmentRowsComponent {
     event.preventDefault();
   }
 
-  onMouseDownBottom(event: MouseEvent) {
+  onMouseDownBottom(event: MouseEvent) {    console.log("4")
     event.stopPropagation();
     this.isResizingBottom = true;
     event.preventDefault();
   }
 
-  resizeBottom(event: MouseEvent, square: HTMLElement) {
+  resizeBottom(event: MouseEvent, square: HTMLElement) {    console.log("4")
     const newHeight = event.clientY - square.getBoundingClientRect().top;
     if (newHeight > 0) {
       this.renderer.setStyle(square, 'height', `${newHeight}px`);
     }
   }
 
-  resizeTop(event: MouseEvent, square: HTMLElement) {
+  resizeTop(event: MouseEvent, square: HTMLElement) {    console.log("4")
     const deltaY = this.startY - event.clientY;
     const newHeight = this.initialHeight + deltaY;
     if (newHeight > 0) {
@@ -215,23 +209,25 @@ export class AppointmentRowsComponent {
     }
   }
 
-  onClickRow(event: MouseEvent, index: number) {
+  onClickRow(event: MouseEvent, index: number) {   
     this.isClick = !this.isClick;
-
+   
     if (this.isClick && this.container) {
       const rect = this.container.nativeElement.getBoundingClientRect();
       const offsetY = event.clientY - rect.top;
-
-      this.overLayStyle.top = `${offsetY}px`;
+  
+      this.overLayStyle.top = `${offsetY - 100}px`;
       this.overLayStyle.height = '100px';
+
+     this.openModal()
+    
     } else {
       this.overLayStyle.top = '0px';
       this.overLayStyle.height = '100px';
     }
   }
-
-  private calculateTimeSlots() {
-    if (!this.container || !this.el) return;
+  private calculateTimeSlots() {    
+    if (!this.container || !this.el ) return;
   
     const containerRect = this.container.nativeElement.getBoundingClientRect();
     const square = this.el.nativeElement.querySelector('.square') as HTMLElement;
@@ -244,15 +240,10 @@ export class AppointmentRowsComponent {
     const containerHeight = containerRect.height;
     const slotHeight = containerHeight / this.timeSlots.length;
   
-     const topSlotIndex = Math.max(0, Math.min(Math.floor(squareTop / slotHeight), this.timeSlots.length - 1));
+    const topSlotIndex = Math.max(0, Math.min(Math.floor(squareTop / slotHeight), this.timeSlots.length - 1));
     const bottomSlotIndex = Math.max(0, Math.min(Math.ceil(squareBottom / slotHeight), this.timeSlots.length - 1));
   
-     console.log('Container Height:', containerHeight);
-    console.log('Slot Height:', slotHeight);
-    console.log('Top Slot Index:', topSlotIndex);
-    console.log('Bottom Slot Index:', bottomSlotIndex);
-  
-     const adjustTime = (time: string, hours: number) => {
+    const adjustTime = (time: string, hours: number) => {
       const [hour, minute] = time.split(':').map(Number);
       const date = new Date();
       date.setHours(hour - hours, minute);
@@ -262,20 +253,44 @@ export class AppointmentRowsComponent {
     this.startTime = adjustTime(this.timeSlots[topSlotIndex] || 'Out of range', 2);
     this.endTime = adjustTime(this.timeSlots[bottomSlotIndex] || 'Out of range', 3);
   
- 
-    console.log('Start Time:', this.startTime);
-    console.log('End Time:', this.endTime);
-  
-     const setTime = {
-      setTime: {
-        startTime: this.startTime,
-        endTime: this.endTime,
+    const newAppointment: SetTimeType = {
+      
+      startTime: this.startTime,
+      endTime: this.endTime,
+      position: {
+        top: squareTop,
+        bottom: squareBottom,
       },
     };
-    this.store.dispatch(SetTimeAction(setTime));
-  }
   
-  trackByIndex(index: number) {
+    const isDuplicate = this.savedAppointments.some(
+      (appointment: any) =>
+        appointment.startTime === newAppointment.startTime &&
+        appointment.endTime === newAppointment.endTime &&
+        appointment.position.top === newAppointment.position?.top &&
+        appointment.position.bottom === newAppointment.position?.bottom
+    );
+  
+    if (!isDuplicate) {
+      this.savedAppointments.push(newAppointment);
+  
+      // Save to localStorage with positions
+      localStorage.setItem('appointments', JSON.stringify(this.savedAppointments));
+  
+      // Dispatch action with time and position
+      this.store.dispatch(SetTimeAction({ setTime: newAppointment }));
+  
+      console.log('New appointment created:', newAppointment);
+
+      const saved = localStorage.getItem('appointments');
+      if (saved) {
+        this.savedAppointments = JSON.parse(saved);
+      }
+    } else {
+      console.log('Appointment with the same time and position already exists');
+    }
+  }
+  trackByIndex(index: number) {    console.log("4")
     return index;
   }
 }

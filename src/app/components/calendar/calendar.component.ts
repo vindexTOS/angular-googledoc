@@ -8,10 +8,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { CalendarModalComponent } from '../calendar-modal/calendar-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
- import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { GetLocalCalendarData } from '../../store/Calendar/Calendar.selector';
 import { CalendarType } from '../../types/calendar-types';
 import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
+
 @Component({
   selector: 'app-calendar',
   standalone: true,
@@ -28,8 +29,7 @@ import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
   template: `
     <div class="calendar-container">
       <mat-calendar [(selected)]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
-
-      
+      <button mat-raised-button color="primary" (click)=" openModal()">+ Create</button>
     </div>
   `,
   styleUrls: ['./calendar.component.scss'],
@@ -51,12 +51,13 @@ export class CalendarComponent {
     private store: Store,
     private snackBar: MatSnackBar
   ) {}
+
   onDateSelected(date: Date | null): void {
-    if(date ){
-      this.store.dispatch(SelectCalendarDate({selectedCalendarDate:date}))
+    if (date) {
+      this.store.dispatch(SelectCalendarDate({ selectedCalendarDate: date }));
     }
-   
   }
+
   onAdd(): void {
     if (!this.selectedDate || !this.startTime || !this.endTime) {
       this.snackBar.open(
@@ -71,7 +72,6 @@ export class CalendarComponent {
       );
       return;
     }
-
 
     const dialogRef = this.dialog.open(CalendarModalComponent, {
       width: '400px',
@@ -95,10 +95,31 @@ export class CalendarComponent {
         ];
 
         localStorage.setItem('calendar-data', JSON.stringify(newCalendarData));
-
-        console.log('Modal data:', result);
         this.calendarData = newCalendarData;
+
+        this.snackBar.open('Event created successfully!', 'Close', {
+          duration: 3000,
+          verticalPosition: 'top',
+          horizontalPosition: 'center',
+          panelClass: ['success-snackbar'],
+        });
       }
     });
   }
+
+
+  openModal(): void {
+    const dialogRef = this.dialog.open(CalendarModalComponent, {
+      width: '1200px',
+      data: { date: this.selectedDate, time: this.startTime  }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('The dialog was closed with data:', result);
+      }
+    });
+  }
+ 
+
 }
