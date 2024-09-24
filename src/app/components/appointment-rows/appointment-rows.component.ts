@@ -85,7 +85,7 @@ export class AppointmentRowsComponent {
   dataFromLocalStorage: CalendarType[] = [];
   startTime = '';
   endTime = '';
- 
+   id:number = 0;
  
 
   savedAppointments: any = [
@@ -141,10 +141,10 @@ export class AppointmentRowsComponent {
     // this.loadStoredPositions();
   }
 
-
+   
 
   updateAppointmentPosition(id: number, newY: number) {
- 
+      this.id = id;
     this.savedAppointments = this. savedAppointments.map((appointment: { id: number }) => {
       if (appointment.id === id) {
         return {
@@ -154,15 +154,15 @@ export class AppointmentRowsComponent {
       }
       return appointment;
     });
-    localStorage.setItem('appointment', JSON.stringify(this. savedAppointments ));
+    localStorage.setItem('appointment', JSON.stringify(this.savedAppointments ));
     // After updating the position, calculate the new time slots for this appointment
     this.calculateTimeSlots(newY);
   }
 
 
-  updateAppointmentTime(id:number,  startTime:string,endTime:string){
+  updateAppointmentTime(  startTime:string,endTime:string){
     this.savedAppointments = this. savedAppointments.map((appointment: { id: number }) => {
-      if (appointment.id === id) {
+      if (appointment.id === this.id) {
         return {
           ...appointment,
             startTime,
@@ -171,7 +171,7 @@ export class AppointmentRowsComponent {
       }
       return appointment;
     });
-    localStorage.setItem('appointment', JSON.stringify(this. savedAppointments ));
+    localStorage.setItem('appointment', JSON.stringify(this.savedAppointments ));
   }
 
 
@@ -226,7 +226,11 @@ export class AppointmentRowsComponent {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('The dialog was closed with data:', result);
+        let info = localStorage.getItem('appointment')
+        if(info){
+          this.savedAppointments = JSON.parse(info)
+        }
+
       }
     });
   }
@@ -248,14 +252,14 @@ export class AppointmentRowsComponent {
     this.endTime = this.timeSlots[clampedBottomIndex];
 
     console.log('Updated times:', this.startTime, this.endTime);
-
+ 
     const setTime = {
       setTime: {
         startTime: this.startTime,
         endTime: this.endTime,
       },
     };
-
+  this. updateAppointmentTime(this.startTime,this.endTime)
     this.store.dispatch(SetTimeAction(setTime));
     this.store.dispatch(SetPosition({position:newY}))
   }

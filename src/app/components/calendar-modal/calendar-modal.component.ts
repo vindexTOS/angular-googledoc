@@ -102,25 +102,22 @@ export class CalendarModalComponent {
       const appointmentData = {
         title: this.form.get('title')?.value,
         description: this.form.get('description')?.value,
-        date: this.selectedCalendar,
+        date: this.selectedCalendar.toISOString().slice(0, 10), 
         startTime: this.setTime.startTime,
         endTime: this.setTime.endTime,
-        position:  this.position 
+        position: this.position, 
+        id: Math.floor(Math.random() * 3000) // Generate a unique ID
       };
-
+  
       this.dialogRef.close(appointmentData);
-
+  
       const existingData = localStorage.getItem('appointment');
       let calendarData = existingData ? JSON.parse(existingData) : [];
-
-      const dateToUpdate = this.selectedCalendar.toISOString().slice(0, 10);
-      const indexToUpdate = calendarData.findIndex((entry: any) => entry.date.slice(0, 10) === dateToUpdate);
-
-      if (indexToUpdate !== -1) {
-        calendarData.splice(indexToUpdate, 1);
-      }
-
+  
+      // Push new appointment data to the array
       calendarData.push(appointmentData);
+  
+      // Save back to local storage
       localStorage.setItem('appointment', JSON.stringify(calendarData));
     }
   }
