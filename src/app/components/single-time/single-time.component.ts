@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CdkDrag, CdkDragEnd } from '@angular/cdk/drag-drop';
+import { CdkDrag } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-single-time',
@@ -7,6 +7,7 @@ import { CdkDrag, CdkDragEnd } from '@angular/cdk/drag-drop';
   template: `
     <div
       class="chadchad"
+      #drag="cdkDrag"
       cdkDrag
       [cdkDragLockAxis]="'y'"
       (cdkDragEnded)="onDragEnd($event)"
@@ -22,16 +23,16 @@ import { CdkDrag, CdkDragEnd } from '@angular/cdk/drag-drop';
 export class SingleTimeComponent {
   @Input() Yangle: number = 0;
   @Input() title: string = '';
+
   @Input() updatePosition: (newY: number) => void = () => {};
 
   // This is triggered when dragging ends
-  onDragEnd(event: CdkDragEnd) {
-    // Get the final Y position of the dragged element
-    const newY = event.source.getFreeDragPosition().y; // Get the new Y position
+  onDragEnd(event: any) {
     
-    console.log("New Y Position:", newY);
+    const newY = event.dropPoint.getFreeDragPosition().y;
+
     
-    // Update the position and trigger recalculation of time slots
+    // Call the updatePosition with the new Y angle and trigger recalculation of time slots
     this.updatePosition(newY);  
   }
 }

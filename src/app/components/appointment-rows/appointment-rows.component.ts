@@ -200,7 +200,7 @@ export class AppointmentRowsComponent {
 
 
   updateAppointmentPosition(id: number, newY: number) {
-    console.log(newY)
+    console.log('Updated Position:', newY); // Log the new position
     this.fakeData = this.fakeData.map((appointment: { id: number }) => {
       if (appointment.id === id) {
         return {
@@ -216,7 +216,6 @@ export class AppointmentRowsComponent {
     // After updating the position, calculate the new time slots for this appointment
     this.calculateTimeSlots(id);
   }
-
 
 
   ngOnInit() {
@@ -339,6 +338,6 @@ export class AppointmentRowsComponent {
     };
     this.store.dispatch(SetTimeAction(setTime));
   
-    console.log("Updated Appointment:", this.fakeData.find((app:any) => app.id === appointmentId));
+    // console.log("Updated Appointment:", this.fakeData.find((app:any) => app.id === appointmentId));
   }
 }
