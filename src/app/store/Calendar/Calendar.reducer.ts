@@ -3,6 +3,7 @@ import { initialCalendarLocalState, initialStateType } from './Calendar.state';
 import {
   GetCalendarData,
   SelectCalendarDate,
+  SetPosition,
   SetTimeAction,
 } from './Calendar.actions';
 
@@ -18,7 +19,11 @@ const _CalendarLocalStorageReducer = createReducer(
   on(SetTimeAction, (state, action) => {
 
     return { ...state, setTime: action.setTime }
-  })
+  }),
+  on(SetPosition ,(state,action)=>{ 
+      return {...state, position:action.position}
+
+  }                 )
 );
 export function CalendarLocalStorageReducer(
   state: initialStateType | undefined,

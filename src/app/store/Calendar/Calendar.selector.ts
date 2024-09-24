@@ -25,3 +25,11 @@ export const GetSetTime = createSelector(
      return state.setTime
   }
 )
+
+
+export const GetPosition = createSelector(
+  CalendarLocalStorageSelector, 
+   (state)=>{
+     return state.position
+   }
+)

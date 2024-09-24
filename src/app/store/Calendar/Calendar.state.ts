@@ -8,6 +8,7 @@ export type initialStateType = {
    
     selectedCalendarDate:CalendarDateType['date']
     setTime:SetTimeType 
+    position: number
 }
 
 export const initialCalendarLocalState: initialStateType = { 
@@ -18,5 +19,7 @@ export const initialCalendarLocalState: initialStateType = {
     setTime:{
          startTime:'',
          endTime:""
-    }
+    },
+    position:0
+ 
 }

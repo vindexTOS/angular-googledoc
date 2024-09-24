@@ -18,5 +18,8 @@ export const SetTimeAction =  createAction(
     props<{setTime:SetTimeType  }>()
 )
  
- 
+export const SetPosition = createAction(
+  "[set position]", 
+  props<{position:number}>()
+)
 

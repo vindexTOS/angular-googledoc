@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CdkDrag } from '@angular/cdk/drag-drop';
 
 @Component({
@@ -6,33 +6,55 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
   standalone: true,
   template: `
     <div
+     
       class="chadchad"
       #drag="cdkDrag"
       cdkDrag
       [cdkDragLockAxis]="'y'"
+      (cdkDragStarted)="onDragStart()"
+      (cdkDragMoved)="onDragMoved($event)"
       (cdkDragEnded)="onDragEnd($event)"
-      [style.transform]="'translateY(' + Yangle + 'px)'"
-      style="position: absolute;"
+      [style.top]="currentY + 'px'"   
+      style="position: absolute; left: 0;"
     >
       <p>{{ title }}</p>
+      <p>{{startTime}} - {{endTime}} </p>
     </div>
   `,
   styleUrls: ['./single-time.component.scss'],
   imports: [CdkDrag],
 })
-export class SingleTimeComponent {
-  @Input() Yangle: number = 0;
+export class SingleTimeComponent implements OnInit {
+  @Input() Yangle: number = 0; // Initial Y position
   @Input() title: string = '';
-
+  @Input() startTime:string = '';
+  @Input() endTime:string ='';
   @Input() updatePosition: (newY: number) => void = () => {};
 
-  // This is triggered when dragging ends
+  currentY: number = 0; 
+  dragStartY: number = 0;  
+
+  ngOnInit() {
+    this.currentY = this.Yangle; 
+  }
+
+  onDragStart() {
+    this.dragStartY = this.currentY;  
+  }
+
+  onDragMoved(event: any) {
+  
+     
+  }
+
   onDragEnd(event: any) {
     
-    const newY = event.dropPoint.getFreeDragPosition().y;
+    this.currentY = this.dragStartY + event.distance.y   
+    this.Yangle = this.currentY; 
+    this.updatePosition(this.Yangle);  
+  }
 
-    
-    // Call the updatePosition with the new Y angle and trigger recalculation of time slots
-    this.updatePosition(newY);  
+  test(event: any) {
+ 
   }
 }
