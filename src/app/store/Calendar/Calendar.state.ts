@@ -13,6 +13,7 @@ export type Appointment = {
     position:number
     description:string 
     color:string
+    currentHeight:string 
 }
 export type initialStateType = { 
     appointments:  Appointment[]

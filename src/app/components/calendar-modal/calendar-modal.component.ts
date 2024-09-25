@@ -93,11 +93,12 @@ export class CalendarModalComponent {
         title: this.form.get('title')?.value,
         description: this.form.get('description')?.value,
         date: this.selectedCalendar.toISOString().slice(0, 10),
-        startTime: this.form.get('startTime')?.value, // Use value from form
-        endTime: this.form.get('endTime')?.value, // Use value from form
+        startTime: this.form.get('startTime')?.value,  
+        endTime: this.form.get('endTime')?.value,  
         position: this.position,
         color: this.data.color,
-        id: this.data.id || Math.floor(Math.random() * 3000)
+        id: this.data.id || Math.floor(Math.random() * 3000),
+        currentHeight:50
       };
   
       const existingData = localStorage.getItem('appointment');
