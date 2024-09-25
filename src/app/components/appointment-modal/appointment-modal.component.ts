@@ -11,8 +11,7 @@ import { CalendarModalComponent } from '../calendar-modal/calendar-modal.compone
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
  import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { GetLocalCalendarData } from '../../store/Calendar/Calendar.selector';
-import { CalendarType } from '../../types/calendar-types';
+ import { CalendarType } from '../../types/calendar-types';
 import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
 @Component({
   selector: 'app-appointment-modal',

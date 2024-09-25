@@ -3,23 +3,33 @@ import { CalendarDateType, CalendarType, SetTimeType } from "../../types/calenda
 
 // type CreateCalendarType = Partial<CalendarType>;
 
+
+
+export type Appointment = { 
+    date:CalendarDateType['date']
+    startTime:string 
+    endTime:string 
+    id:number
+    position:number
+    description:string 
+    color:string
+}
 export type initialStateType = { 
-    calendarData: CalendarType[],
+    appointments:  Appointment[]
    
     selectedCalendarDate:CalendarDateType['date']
     setTime:SetTimeType 
     position: number
 }
-
 export const initialCalendarLocalState: initialStateType = { 
-    calendarData: [],
- 
+    appointments: [],
+    
     selectedCalendarDate:new Date(),
 
     setTime:{
          startTime:'',
          endTime:""
     },
-    position:0
+    position:0,
  
 }

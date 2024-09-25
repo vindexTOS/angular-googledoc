@@ -1,7 +1,7 @@
 import { Action, createAction, createReducer, on } from '@ngrx/store';
 import { initialCalendarLocalState, initialStateType } from './Calendar.state';
 import {
-  GetCalendarData,
+  GetAppointmentData,
   SelectCalendarDate,
   SetPosition,
   SetTimeAction,
@@ -9,8 +9,8 @@ import {
 
 const _CalendarLocalStorageReducer = createReducer(
   initialCalendarLocalState,
-  on(GetCalendarData, (state, action) => {
-    return { ...state, calendarData: action.calendarData };
+  on(GetAppointmentData, (state, action) => {
+    return { ...state,  appointments: action.appointments };
   }),
 
   on(SelectCalendarDate, (state, action) => {

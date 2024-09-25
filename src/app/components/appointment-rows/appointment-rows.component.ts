@@ -17,6 +17,7 @@ import { CalendarType, SetTimeType } from '../../types/calendar-types';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { SingleTimeComponent } from '../single-time/single-time.component';
 import { AppointmentService } from '../../services/appointment.service';
+import { GetLocalAppointmentData } from '../../store/Calendar/Calendar.selector';
 @Component({
   selector: 'app-appointment-rows',
   standalone: true,
@@ -28,12 +29,14 @@ import { AppointmentService } from '../../services/appointment.service';
      
           @for(appointment of  savedAppointments; track appointment; let i = $index ){
          <app-single-time 
+             [description]="appointment.description"
        [Yangle]="appointment.position"
        [title]="appointment.title"
         [startTime]="appointment.startTime"
         [endTime]="appointment.endTime"
         [color]="appointment.color"
         [id]="appointment.id"
+    
        [updatePosition]="updateAppointmentPosition.bind(this, appointment.id)">
      </app-single-time>
      }
@@ -43,16 +46,14 @@ import { AppointmentService } from '../../services/appointment.service';
  
        
         </div>
-    <!-- <div class="resizer top" (mousedown)="onMouseDownTop($event)"></div>
   
-    <div class="resizer bottom" (mousedown)="onMouseDownBottom($event)"></div> -->
   </div>
 
 </div>
      
       </div> 
       @for ( slot of timeSlots; track slot ;let i = $index) {
-        <div  (dblclick)=" openModal($event)"       class="time-slot">
+        <div  (click)=" openModal($event)"       class="time-slot">
           {{slot}}
         </div>
       }
@@ -90,13 +91,7 @@ export class AppointmentRowsComponent {
   
 
   ];
-
-  private selectedCalendarSubject = new BehaviorSubject<Date | null>(
-    this.selectedCalendar
-  );
-  private dataFromLocalStorageSubject = new BehaviorSubject<CalendarType[]>(
-    this.dataFromLocalStorage
-  );
+ 
 
 
   constructor(
@@ -105,39 +100,14 @@ export class AppointmentRowsComponent {
     private store: Store,
     private appointmentService:AppointmentService
   ) {
-    //  this.store.select(GetSelecctedDate).subscribe((data) => {
-    //   this.selectedCalendarSubject.next(data);
-    // });
+     
 
-    //  this.store.select(GetLocalCalendarData).subscribe((data) => {
-    //   this.dataFromLocalStorageSubject.next(data);
-    // });
+     this.store.select(GetLocalAppointmentData).subscribe((data) => {
+      this. savedAppointments = data
+    });
 
-    //  combineLatest([this.selectedCalendarSubject, this.dataFromLocalStorageSubject])
-    //   .pipe(
-    //     map(([selectedCalendar, dataFromLocalStorage]) => {
-    //       if (!selectedCalendar) {
-    //         return null;
-    //       }
-
-    //       const appointment = dataFromLocalStorage.find((val: any) =>
-    //         val.date.slice(0, 10) === selectedCalendar.toISOString().slice(0, 10)
-    //       );
-
-    //       return appointment || null;
-    //     })
-    //   )
-    //   .subscribe((savedAppointment) => {
-    //     this.savedAppointment = savedAppointment;
-    //     console.log(savedAppointment)
-    //     if (this.savedAppointment) {
-    //       this.startTime = this.savedAppointment.startTime;
-    //       this.endTime = this.savedAppointment.endTime;
-    //       this.positionSquare();
-    //     }
-    //   });
-
-    // this.loadStoredPositions();
+   
+ 
   }
 
    
@@ -184,24 +154,9 @@ export class AppointmentRowsComponent {
     this.generateTimeSlots();
   }
   ngAfterViewInit() {
-    // this.positionSquare();
+  
   }
-  // private positionSquare() {
-  //   if (!this.container) return;
-
-  //   const startIndex = this.timeSlots.indexOf(this.startTime);
-  //   const endIndex = this.timeSlots.indexOf(this.endTime);
-
-  //   const slotHeight =
-  //     this.container.nativeElement.offsetHeight / this.timeSlots.length;
-  //   const topPosition = startIndex * slotHeight;
-  //   const squareHeight = (endIndex - startIndex) * slotHeight;
-
-  //   this.overLayStyle.top = `${topPosition}px`;
-  //   this.overLayStyle.height = `${squareHeight}px`;
-  // }
-
-
+ 
 
 
   private generateTimeSlots(): void {
@@ -224,7 +179,7 @@ export class AppointmentRowsComponent {
 
   openModal(event:any): void {
     this. onClickRow(event)
-
+ 
     let randomNum = Math.floor(Math.random() * 12)
     let hex = this.appointmentService.colors[ randomNum]
 

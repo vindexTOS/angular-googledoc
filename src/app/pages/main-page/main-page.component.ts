@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
 import { CalendarComponent } from '../../components/calendar/calendar.component';
 import { Store } from '@ngrx/store';
-import { GetLocalCalendarData } from '../../store/Calendar/Calendar.selector';
-import { GetCalendarData } from '../../store/Calendar/Calendar.actions';
-import { CalendarType } from '../../types/calendar-types';
+ import { CalendarType } from '../../types/calendar-types';
  import { AppointmentModalComponent } from "../../components/appointment-modal/appointment-modal.component";
 import { AppointmentRowsComponent } from '../../components/appointment-rows/appointment-rows.component';
  
@@ -29,13 +27,7 @@ export class MainPageComponent {
   ngOnInit() {
   
 
-    const calendarDataLocalStorage = localStorage.getItem("calendar-data")
-    if(calendarDataLocalStorage != null){
-      let calendarArr:CalendarType[] = JSON.parse(calendarDataLocalStorage)
- 
-     this.store.dispatch(GetCalendarData({calendarData:calendarArr}))
- 
-    }
+    
 
   }
 }

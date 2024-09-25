@@ -8,17 +8,17 @@ export class AppointmentService {
   constructor() { }
 
   colors = [
-    "#FF5733", // Red-Orange
-    "#33FF57", // Green
-    "#3357FF", // Blue
-    "#FF33A6", // Pink
-    "#FFEB33", // Yellow
-    "#33FFF5", // Aqua
-    "#8D33FF", // Purple
-    "#FF8333", // Orange
-    "#FF33D1", // Magenta
-    "#FFDA33", // Gold
-    "#33FF8D", // Light Green
-    "#B3FF33"  // Lime Green
+    "#C74A27", // Darker Red-Orange
+    "#2A7D2B", // Darker Green
+    "#2A4B7C", // Darker Blue
+    "#C72A6A", // Darker Pink
+    "#C7A733", // Darker Yellow
+    "#2AB5B0", // Darker Aqua
+    "#5B1F8D", // Darker Purple
+    "#C75B27", // Darker Orange
+    "#C727A1", // Darker Magenta
+    "#C7A227", // Darker Gold
+    "#2AB67C", // Darker Light Green
+    "#7FAF27"  // Darker Lime Green
   ];
 }

@@ -9,8 +9,7 @@ import { CalendarModalComponent } from '../calendar-modal/calendar-modal.compone
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { GetLocalCalendarData } from '../../store/Calendar/Calendar.selector';
-import { CalendarType } from '../../types/calendar-types';
+ import { CalendarType } from '../../types/calendar-types';
 import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
 
 @Component({
@@ -29,7 +28,7 @@ import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
   template: `
     <div class="calendar-container">
       <mat-calendar [(selected)]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
-      <button mat-raised-button color="primary" (click)=" openModal()">+ Create</button>
+      <!-- <button mat-raised-button color="primary" (click)=" openModal()">+ Create</button> -->
     </div>
   `,
   styleUrls: ['./calendar.component.scss'],
@@ -41,9 +40,7 @@ export class CalendarComponent {
   calendarData: CalendarType[] = [];
 
   ngOnInit() {
-    this.store.select(GetLocalCalendarData).subscribe((data) => {
-      this.calendarData = data;
-    });
+ 
   }
 
   constructor(

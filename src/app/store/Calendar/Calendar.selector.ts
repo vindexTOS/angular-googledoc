@@ -4,10 +4,10 @@ export const CalendarLocalStorageSelector = createFeatureSelector<any>(
   'calendarLocalStorage'
 );
 
-export const GetLocalCalendarData = createSelector(
+export const GetLocalAppointmentData = createSelector(
   CalendarLocalStorageSelector,
   (state) => {
-    return state.calendarData;
+    return state.appointments
   }
 );
 
