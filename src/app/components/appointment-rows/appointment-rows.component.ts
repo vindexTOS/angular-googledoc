@@ -13,13 +13,10 @@ import { CalendarModalComponent } from '../calendar-modal/calendar-modal.compone
 import { Store } from '@ngrx/store';
 import { SetPosition, SetTimeAction } from '../../store/Calendar/Calendar.actions';
 import { CalendarType, SetTimeType } from '../../types/calendar-types';
-import {
-  GetLocalCalendarData,
-  GetSelecctedDate,
-} from '../../store/Calendar/Calendar.selector';
-import { Data } from '@angular/router';
+ 
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { SingleTimeComponent } from '../single-time/single-time.component';
+import { AppointmentService } from '../../services/appointment.service';
 @Component({
   selector: 'app-appointment-rows',
   standalone: true,
@@ -35,7 +32,8 @@ import { SingleTimeComponent } from '../single-time/single-time.component';
        [title]="appointment.title"
         [startTime]="appointment.startTime"
         [endTime]="appointment.endTime"
-       
+        [color]="appointment.color"
+        [id]="appointment.id"
        [updatePosition]="updateAppointmentPosition.bind(this, appointment.id)">
      </app-single-time>
      }
@@ -54,7 +52,7 @@ import { SingleTimeComponent } from '../single-time/single-time.component';
      
       </div> 
       @for ( slot of timeSlots; track slot ;let i = $index) {
-        <div  (dblclick)=" openModal()"  (mousedown)="onClickRow($event )"  class="time-slot">
+        <div  (dblclick)=" openModal($event)"       class="time-slot">
           {{slot}}
         </div>
       }
@@ -73,7 +71,7 @@ import { SingleTimeComponent } from '../single-time/single-time.component';
 
 
 export class AppointmentRowsComponent {
-  timeSlots: string[] = [];
+  timeSlots:  any[] = [];
   @ViewChild('container') container: ElementRef | undefined;
   isClick = false;
   overLayStyle = {
@@ -104,7 +102,8 @@ export class AppointmentRowsComponent {
   constructor(
  
     private dialog: MatDialog,
-    private store: Store
+    private store: Store,
+    private appointmentService:AppointmentService
   ) {
     //  this.store.select(GetSelecctedDate).subscribe((data) => {
     //   this.selectedCalendarSubject.next(data);
@@ -207,8 +206,13 @@ export class AppointmentRowsComponent {
 
   private generateTimeSlots(): void {
     this.timeSlots = [];
-    for (let hour = 0; hour < 24; hour++) {
-      this.timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+    
+    const totalHours = 24; // 0-23 hours
+    
+    for (let hour = 0; hour < totalHours; hour++) {
+      const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
+      this.timeSlots.push(timeSlot);
+      console.log(`Hour ${hour}: ${timeSlot}`);
     }
   }
   onClickRow(event: MouseEvent ) {
@@ -218,12 +222,17 @@ export class AppointmentRowsComponent {
 
   }
 
-  openModal(): void {
+  openModal(event:any): void {
+    this. onClickRow(event)
+
+    let randomNum = Math.floor(Math.random() * 12)
+    let hex = this.appointmentService.colors[ randomNum]
+
     const dialogRef = this.dialog.open(CalendarModalComponent, {
       width: '1200px',
-      data: {setTime:{startTime:this.startTime, endTime:this.endTime }}
+      data: {setTime:{startTime:this.startTime, endTime:this.endTime }, color:hex}
     });
-
+ 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         let info = localStorage.getItem('appointment')
@@ -235,33 +244,43 @@ export class AppointmentRowsComponent {
     });
   }
 
-  private calculateTimeSlots(newY: number) {
-    console.log(newY)
-    const containerRect = this.container?.nativeElement.getBoundingClientRect();
-    const slotHeight = containerRect.height / this.timeSlots.length;
-
-
-    const topSlotIndex = Math.floor(newY / slotHeight);
-    const bottomSlotIndex = Math.ceil((newY) / slotHeight);
-
-
-    const clampedTopIndex = Math.max(0, Math.min(topSlotIndex, this.timeSlots.length - 1));
-    const clampedBottomIndex = Math.max(0, Math.min(bottomSlotIndex, this.timeSlots.length - 1));
-
-    this.startTime = this.timeSlots[clampedTopIndex];
-    this.endTime = this.timeSlots[clampedBottomIndex];
-
-    console.log('Updated times:', this.startTime, this.endTime);
+  private calculateTimeSlots(newY: number): void {
+    console.log('newY:', newY);
+    
+    const startY = 80;  
+    const endY = 1150;  
+    const totalHours = 24; 
+    const totalSlots = totalHours * 4;  
+    const pixelIncrement = (endY - startY) / (totalSlots - 1); 
+  
  
-    const setTime = {
+    const slotIndex = Math.floor((newY - startY) / pixelIncrement);
+    const clampedSlotIndex = Math.max(0, Math.min(slotIndex, totalSlots - 1));
+    
+    const startHour = Math.floor(clampedSlotIndex / 4) - 1  
+    const startMinutes = (clampedSlotIndex % 4) * 15  ;  
+  
+ 
+    const endHour = Math.floor((clampedSlotIndex + 1) / 4);
+    let endMinutes = ((clampedSlotIndex + 1) % 4)  * 15  ;
+  
+    this.startTime = `${startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
+    this.endTime = `${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+  
+    console.log('Updated times:', this.startTime, this.endTime);
+  
+     const setTimePayload = {
       setTime: {
         startTime: this.startTime,
         endTime: this.endTime,
       },
     };
-  this. updateAppointmentTime(this.startTime,this.endTime)
-    this.store.dispatch(SetTimeAction(setTime));
-    this.store.dispatch(SetPosition({position:newY}))
+  
+     this.updateAppointmentTime(this.startTime, this.endTime);
+    this.store.dispatch(SetTimeAction(setTimePayload));
+    this.store.dispatch(SetPosition({ position: newY }));
   }
+  
+  
 
 }

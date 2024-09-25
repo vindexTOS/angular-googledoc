@@ -67,7 +67,7 @@ export class CalendarModalComponent {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<CalendarModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { date: Date | null; time: string | null; title?: string; description?: string, position: any },
+    @Inject(MAT_DIALOG_DATA) public data: { color:string, date: Date | null; time: string | null; title?: string; description?: string, position: any },
     private store: Store
   ) {
     this.form = this.fb.group({
@@ -106,6 +106,7 @@ export class CalendarModalComponent {
         startTime: this.setTime.startTime,
         endTime: this.setTime.endTime,
         position: this.position, 
+        color:this.data. color,
         id: Math.floor(Math.random() * 3000) // Generate a unique ID
       };
   
