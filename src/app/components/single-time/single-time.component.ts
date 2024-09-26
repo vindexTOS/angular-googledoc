@@ -9,7 +9,7 @@ import { EditAppointmentModalComponent } from '../../edit-appointment-modal/edit
   selector: 'app-single-time',
   standalone: true,
   template: `
-    <div
+     <div
       class="chadchad"
       #drag="cdkDrag"
       cdkDrag
@@ -18,8 +18,8 @@ import { EditAppointmentModalComponent } from '../../edit-appointment-modal/edit
       (cdkDragEnded)="onDragEnd($event)"
       (dblclick)="openEditModal()"
       [style.top]="currentY + 'px'"
-      [style.height]="currentHeight + 'px'"
-      [style.paddingTop]="currentHeight / 10 + 'px'"
+      [style.height]="radius + 'px'" 
+      [style.paddingTop]="radius / 10 + 'px'"
       [style.backgroundColor]="color"
       style="position: absolute; left: 0;"
     >
@@ -38,123 +38,141 @@ import { EditAppointmentModalComponent } from '../../edit-appointment-modal/edit
 export class SingleTimeComponent implements OnInit {
   private isResizingTop = false;
   private isResizingBottom = false;
-  private initialHeight: number = 0;
+  private initialRadius = 0;
   private startY: number = 0;
   private initialTop: number = 0;
 
   constructor(private dialog: MatDialog, private store: Store) {}
 
-  @Input() Yangle: number = 0; // Initial Y position
+  @Input() Yangle: number = 0; 
   @Input() title: string = '';
   @Input() startTime: string = '';
   @Input() endTime: string = '';
   @Input() color: string = '#8D33FF';
   @Input() id: number = 0;
   @Input() description: string = '';
-  @Input() updatePosition: (newY: number) => void = () => {};
+  @Input() radius: number = 50; 
+
+  @Input() updatePosition: (newY: number, radius: number) => void = () => {};
 
   currentY: number = 0;
-  currentHeight: number = 50;
   dragStartY: number = 0;
 
   onMouseDownTop(event: MouseEvent) {
-    // const savedAppointments = JSON.parse(localStorage.getItem('appointment') || '[]');
-    // const index = savedAppointments.findIndex((appointment: any) => appointment.id === this.id);
+  
 
     event.stopPropagation();
     this.startY = event.clientY;
-    this.initialHeight = this.currentHeight;
     this.initialTop = this.currentY;
+    this.initialRadius = this.radius;  
     this.isResizingTop = true;
-    console.log( this.startY )
-
     event.preventDefault();
-    
-  }
+}
 
-  onMouseDownBottom(event: MouseEvent) {
+onMouseDownBottom(event: MouseEvent) {
     event.stopPropagation();
     this.startY = event.clientY;
     this.isResizingBottom = true;
-    this.initialHeight = this.currentHeight;
-    console.log(this.initialHeight)
+    this.initialRadius = this.radius;  
     event.preventDefault();
-  }
+}
 
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
+@HostListener('document:mousemove', ['$event'])
+onMouseMove(event: MouseEvent) {
+    const deltaY = event.clientY - this.startY;
+    
     if (this.isResizingTop) {
-      const deltaY = event.clientY - this.startY;
-      this.currentHeight = this.initialHeight - deltaY;
-      this.currentY = this.initialTop + deltaY;
+        this.radius = Math.max(10, this.initialRadius - deltaY  );   
+        this.currentY = this.initialTop + deltaY; 
+        this.updateLocalStorage();
     }
 
     if (this.isResizingBottom) {
-      const deltaY = event.clientY - this.startY;
-      this.currentHeight = this.initialHeight + deltaY;
+        this.radius = Math.max(10, this.initialRadius + deltaY  );  
+        this.updateLocalStorage();
     }
-  }
+}
+ 
+@HostListener('document:mouseup', ['$event'])
+onMouseUp(event: MouseEvent) {
+    if (this.isResizingTop || this.isResizingBottom) {
+        this.isResizingTop = false;
+        this.isResizingBottom = false;
+    }
+    
+}
+
+ngOnInit() {
+    this.currentY = this.Yangle;
+    this.radius = this.radius || 50;  
+}
+
+onDragStart() {
 
  
-  @HostListener('document:mouseup', ['$event'])
-  onMouseUp(event: MouseEvent) {
-    if (this.isResizingTop || this.isResizingBottom) {
-      this.isResizingTop = false;
-      this.isResizingBottom = false;
-    }
-  }
-
-  ngOnInit() {
-    this.currentY = this.Yangle;
-  }
-
-  onDragStart() {
     this.dragStartY = this.currentY;
-  }
+}
 
-  onDragEnd(event: any) {
-    this.currentY = this.dragStartY + event.distance.y;
-    this.Yangle = this.currentY;
-    this.updatePosition(this.Yangle);
-  }
+onDragEnd(event: any) {
+  // this.currentY = this.dragStartY + event.distance.y;
+  console.log('radius', this.radius )
+  // this.Yangle = this.currentY;
+  let innerState  = this.dragStartY + event.distance.y;
+  this.updatePosition(innerState ,this.radius);
+}
 
-  openEditModal() {
+openEditModal() {
     const dialogRef = this.dialog.open(EditAppointmentModalComponent, {
-      data: {
-        title: this.title,
-        description: this.description,
-        startTime: this.startTime,
-        endTime: this.endTime,
-        position: { Yangle: this.currentY },
-        id: this.id,
-      },
+        data: {
+            title: this.title,
+            description: this.description,
+            startTime: this.startTime,
+            endTime: this.endTime,
+            position: { Yangle: this.currentY },
+            id: this.id,
+        },
     });
 
     dialogRef.afterClosed().subscribe((updatedData) => {
-      if (updatedData) {
-        this.updateAppointment(updatedData);
-      }
+        if (updatedData) {
+            this.updateAppointment(updatedData);
+        }
     });
-  }
+}
 
-  updateAppointment(updatedData: any) {
+updateAppointment(updatedData: any) {
     const savedAppointments = JSON.parse(localStorage.getItem('appointment') || '[]');
     const index = savedAppointments.findIndex((appointment: any) => appointment.id === updatedData.id);
 
     if (index !== -1) {
-      savedAppointments[index] = {
-        ...savedAppointments[index],
-        ...updatedData,
-      };
+        savedAppointments[index] = {
+            ...savedAppointments[index],
+            ...updatedData,
+            radius: this.radius, // Save the updated radius
+        };
 
-      localStorage.setItem('appointment', JSON.stringify(savedAppointments));
-      let newAppointments = localStorage.getItem('appointment');
-      if (newAppointments) {
-        this.store.dispatch(GetAppointmentData({ appointments: JSON.parse(newAppointments) }));
-      }
-      console.log('Updated Appointment:', savedAppointments[index]);
+        localStorage.setItem('appointment', JSON.stringify(savedAppointments));
+        let newAppointments = localStorage.getItem('appointment');
+        if (newAppointments) {
+            this.store.dispatch(GetAppointmentData({ appointments: JSON.parse(newAppointments) }));
+        }
+      
     } else {
-      console.error('Appointment not found for ID:', updatedData.id);
+        console.error('Appointment not found for ID:', updatedData.id);
     }
-  }
+}
+
+private updateLocalStorage() {
+    const savedAppointments = JSON.parse(localStorage.getItem('appointment') || '[]');
+    const index = savedAppointments.findIndex((appointment: any) => appointment.id === this.id);
+
+    if (index !== -1) {
+        savedAppointments[index].radius = this.radius; // Update the radius
+        localStorage.setItem('appointment', JSON.stringify(savedAppointments));
+        this.store.dispatch(GetAppointmentData({ appointments: savedAppointments }));
+    
+    } else {
+        console.error('Appointment not found for ID:', this.id);
+    }
+}
 }

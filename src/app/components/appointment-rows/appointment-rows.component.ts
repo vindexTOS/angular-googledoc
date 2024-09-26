@@ -27,7 +27,7 @@ import { GetLocalAppointmentData } from '../../store/Calendar/Calendar.selector'
    
           <div class="parent-container"  cdkDrag cdkDragLockAxis="y">
      
-          @for(appointment of  savedAppointments; track appointment; let i = $index ){
+          @for(appointment of  savedAppointments;  track appointment ; let i = $index ){
          <app-single-time 
              [description]="appointment.description"
        [Yangle]="appointment.position"
@@ -36,7 +36,7 @@ import { GetLocalAppointmentData } from '../../store/Calendar/Calendar.selector'
         [endTime]="appointment.endTime"
         [color]="appointment.color"
         [id]="appointment.id"
-    
+            [radius]="appointment.radius"
        [updatePosition]="updateAppointmentPosition.bind(this, appointment.id)">
      </app-single-time>
      }
@@ -110,7 +110,7 @@ export class AppointmentRowsComponent {
  
   }
 
-   
+ 
 
   updateAppointmentPosition(id: number, newY: number) {
       this.id = id;

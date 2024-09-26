@@ -98,7 +98,7 @@ export class CalendarModalComponent {
         position: this.position,
         color: this.data.color,
         id: this.data.id || Math.floor(Math.random() * 3000),
-        currentHeight:50
+        radius:50
       };
   
       const existingData = localStorage.getItem('appointment');

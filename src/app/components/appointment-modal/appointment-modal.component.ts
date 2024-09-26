@@ -7,12 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { CalendarModalComponent } from '../calendar-modal/calendar-modal.component';
-import { MatDialog } from '@angular/material/dialog';
-import { Store } from '@ngrx/store';
- import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
- import { CalendarType } from '../../types/calendar-types';
-import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
+ 
+ import {   MatSnackBarModule } from '@angular/material/snack-bar';
+ 
 @Component({
   selector: 'app-appointment-modal',
   standalone: true,
