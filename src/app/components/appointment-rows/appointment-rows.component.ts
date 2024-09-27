@@ -4,8 +4,8 @@ import {
   ElementRef,
   HostListener,
   model,
-  Renderer2,
-  ViewChild,
+  Renderer2, 
+  ViewChild, 
 } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,7 +13,6 @@ import { CalendarModalComponent } from '../calendar-modal/calendar-modal.compone
 import { Store } from '@ngrx/store';
 import { SetPosition, SetTimeAction } from '../../store/Calendar/Calendar.actions';
 import { CalendarType, SetTimeType } from '../../types/calendar-types';
- 
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { SingleTimeComponent } from '../single-time/single-time.component';
 import { AppointmentService } from '../../services/appointment.service';
@@ -27,7 +26,7 @@ import { GetLocalAppointmentData } from '../../store/Calendar/Calendar.selector'
    
           <div class="parent-container"  cdkDrag cdkDragLockAxis="y">
      
-          @for(appointment of  savedAppointments;  track appointment ; let i = $index ){
+          @for(appointment of  savedAppointments;  track appointment    ; let i = $index ){
          <app-single-time 
              [description]="appointment.description"
        [Yangle]="appointment.position"
@@ -53,7 +52,7 @@ import { GetLocalAppointmentData } from '../../store/Calendar/Calendar.selector'
      
       </div> 
       @for ( slot of timeSlots; track slot ;let i = $index) {
-        <div  (click)=" openModal($event)"       class="time-slot">
+        <div  (click)=" openModal($event)"  class="time-slot">
           {{slot}}
         </div>
       }
@@ -112,20 +111,37 @@ export class AppointmentRowsComponent {
 
  
 
-  updateAppointmentPosition(id: number, newY: number) {
+  updateAppointmentPosition(id: number, newY: number, radius:number) {
+  
       this.id = id;
-    this.savedAppointments = this. savedAppointments.map((appointment: { id: number }) => {
-      if (appointment.id === id) {
-        return {
-          ...appointment,
-          position:  newY
-        };
-      }
-      return appointment;
-    });
-    localStorage.setItem('appointment', JSON.stringify(this.savedAppointments ));
-    // After updating the position, calculate the new time slots for this appointment
-    this.calculateTimeSlots(newY);
+
+      let local= localStorage.getItem("appointment")
+      console.log(local)
+ 
+        if(local)
+        this.savedAppointments =  JSON.parse(    local  )  
+        console.log(local)
+        this.savedAppointments   =   this.savedAppointments .map((appointment: { id: number }) => {
+        if (appointment.id === id) {
+          return {
+            ...appointment,
+            position:  newY
+          };
+        }
+        return appointment;
+      });
+  
+    
+      localStorage.setItem('appointment', JSON.stringify(this.savedAppointments ));
+  
+    
+   
+  
+       this.calculateTimeSlots(newY, radius);
+
+    
+    
+    
   }
 
 
@@ -167,18 +183,17 @@ export class AppointmentRowsComponent {
     for (let hour = 0; hour < totalHours; hour++) {
       const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
       this.timeSlots.push(timeSlot);
-      console.log(`Hour ${hour}: ${timeSlot}`);
-    }
+     }
   }
   onClickRow(event: MouseEvent ) {
     let newY = event.pageY  -430
-    this.calculateTimeSlots(newY)
+    this.calculateTimeSlots(newY, 50)
   
 
   }
 
   openModal(event:any): void {
-    this. onClickRow(event)
+    // this. onClickRow(event)
  
     let randomNum = Math.floor(Math.random() * 12)
     let hex = this.appointmentService.colors[ randomNum]
@@ -199,43 +214,41 @@ export class AppointmentRowsComponent {
     });
   }
 
-  private calculateTimeSlots(newY: number): void {
-    console.log('newY:', newY);
-    
+  private calculateTimeSlots(newY: number, radius: number): void {
     const startY = 80;  
     const endY = 1150;  
     const totalHours = 24; 
     const totalSlots = totalHours * 4;  
     const pixelIncrement = (endY - startY) / (totalSlots - 1); 
-  
- 
-    const slotIndex = Math.floor((newY - startY) / pixelIncrement);
+
+     const slotIndex = Math.floor((newY - startY) / pixelIncrement);
     const clampedSlotIndex = Math.max(0, Math.min(slotIndex, totalSlots - 1));
+
+     const startHour = Math.floor(clampedSlotIndex / 4) - 1;  
+    const startMinutes = (clampedSlotIndex % 4) * 15;  
+
+     const durationInSlots = Math.ceil(radius  /14 ); // Assuming 50px = 1 hour, adjust accordingly
+
+     const endSlotIndex = clampedSlotIndex + durationInSlots; 
+    const endClampedSlotIndex = Math.min(endSlotIndex, totalSlots - 1);
     
-    const startHour = Math.floor(clampedSlotIndex / 4) - 1  
-    const startMinutes = (clampedSlotIndex % 4) * 15  ;  
-  
- 
-    const endHour = Math.floor((clampedSlotIndex + 1) / 4);
-    let endMinutes = ((clampedSlotIndex + 1) % 4)  * 15  ;
-  
-    this.startTime = `${startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
+    const endHour = Math.floor(endClampedSlotIndex / 4);
+    const endMinutes = (endClampedSlotIndex % 4) * 15;
+
+     this.startTime = `${startHour <= 0 ? "0" : startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
     this.endTime = `${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
-  
-    console.log('Updated times:', this.startTime, this.endTime);
-  
-     const setTimePayload = {
-      setTime: {
-        startTime: this.startTime,
-        endTime: this.endTime,
-      },
+
+    const setTimePayload = {
+        setTime: {
+            startTime: this.startTime,
+            endTime: this.endTime,
+        },
     };
-  
-     this.updateAppointmentTime(this.startTime, this.endTime);
+
+    this.updateAppointmentTime(this.startTime, this.endTime);
     this.store.dispatch(SetTimeAction(setTimePayload));
     this.store.dispatch(SetPosition({ position: newY }));
-  }
-  
+}
   
 
 }

@@ -14,6 +14,7 @@ export type Appointment = {
     description:string 
     color:string
     radius: number; 
+    
 }
 export type initialStateType = { 
     appointments:  Appointment[]
