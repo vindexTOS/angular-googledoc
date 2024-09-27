@@ -6,6 +6,7 @@ import { CalendarDateType, CalendarType, SetTimeType } from "../../types/calenda
 
 
 export type Appointment = { 
+    title:string 
     date:CalendarDateType['date']
     startTime:string 
     endTime:string 

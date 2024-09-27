@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Appointment } from '../store/Calendar/Calendar.state';
 
 @Injectable({
   providedIn: 'root'
@@ -6,7 +7,7 @@ import { Injectable } from '@angular/core';
 export class AppointmentService {
 
   constructor() { }
-
+  appointmentData:Appointment[] | any[] = []
   colors = [
     "#C74A27", // Darker Red-Orange
     "#2A7D2B", // Darker Green

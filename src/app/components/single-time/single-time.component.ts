@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { GetAppointmentData } from '../../store/Calendar/Calendar.actions';
 import { EditAppointmentModalComponent } from '../../edit-appointment-modal/edit-appointment-modal.component';
+import { AppointmentService } from '../../services/appointment.service';
 
 @Component({
   selector: 'app-single-time',
@@ -25,8 +26,8 @@ import { EditAppointmentModalComponent } from '../../edit-appointment-modal/edit
       style="position: absolute; left: 0;"
     >
       <div class="text-wrapper">
-        {{currentY}}
-        {{radius}}
+        <!-- {{currentY}}
+        {{radius}} -->
         <p>{{ title }}</p>
         <p>{{ startTime }} - {{ endTime }}</p>
       </div>
@@ -44,8 +45,8 @@ export class SingleTimeComponent implements OnInit {
   private initialRadius = 0;
   private startY: number = 0;
   private initialTop: number = 0;
-
-  constructor(private dialog: MatDialog, private store: Store) {}
+ 
+  constructor(private dialog: MatDialog, private store: Store, private appointmentService:AppointmentService) {}
 
   @Input() Yangle: number = 0; 
   @Input() title: string = '';
@@ -140,6 +141,7 @@ onDragEnd(event: any) {
    
   // this.Yangle = this.currentY;
   let innerState  = this.dragStartY + event.distance.y;
+ 
   this.updatePosition(innerState ,this.radius);
      
 }
@@ -186,15 +188,15 @@ updateAppointment(updatedData: any) {
 }
 
 private updateLocalStorage() {
-    const savedAppointments = JSON.parse(localStorage.getItem('appointment') || '[]');
-    const index = savedAppointments.findIndex((appointment: any) => appointment.id === this.id);
+  const savedAppointments = JSON.parse(localStorage.getItem('appointment') || '[]');
+  const index = savedAppointments.findIndex((appointment: any) => appointment.id === this.id);
 
  
       savedAppointments[index].radius = this.radius; 
       savedAppointments[index].position = this.currentY; 
       localStorage.setItem('appointment', JSON.stringify(savedAppointments));
-     
-    
-     
-  }
+ setTimeout(()=>{       this.updatePosition(this.currentY, this.radius);
+ },500)
+ 
+}
 }

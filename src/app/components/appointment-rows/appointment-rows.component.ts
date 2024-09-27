@@ -111,38 +111,28 @@ export class AppointmentRowsComponent {
 
  
 
-  updateAppointmentPosition(id: number, newY: number, radius:number) {
-  
-      this.id = id;
+  updateAppointmentPosition(id: number, newY: number, radius: number) {
+    this.id = id;
 
-      let local= localStorage.getItem("appointment")
-      console.log(local)
- 
-        if(local)
-        this.savedAppointments =  JSON.parse(    local  )  
-        console.log(local)
-        this.savedAppointments   =   this.savedAppointments .map((appointment: { id: number }) => {
+    let local = localStorage.getItem("appointment");
+    if (local) {
+        this.savedAppointments = JSON.parse(local);
+    }
+
+    this.savedAppointments = this.savedAppointments.map((appointment: { id: number }) => {
         if (appointment.id === id) {
-          return {
-            ...appointment,
-            position:  newY
-          };
+            return {
+                ...appointment,
+                position: newY,
+                radius: radius // Update radius as well
+            };
         }
         return appointment;
-      });
-  
-    
-      localStorage.setItem('appointment', JSON.stringify(this.savedAppointments ));
-  
-    
-   
-  
-       this.calculateTimeSlots(newY, radius);
+    });
 
-    
-    
-    
-  }
+    localStorage.setItem('appointment', JSON.stringify(this.savedAppointments));
+    this.calculateTimeSlots(newY, radius);
+}
 
 
   updateAppointmentTime(  startTime:string,endTime:string){
@@ -193,7 +183,7 @@ export class AppointmentRowsComponent {
   }
 
   openModal(event:any): void {
-    // this. onClickRow(event)
+    this. onClickRow(event)
  
     let randomNum = Math.floor(Math.random() * 12)
     let hex = this.appointmentService.colors[ randomNum]
@@ -227,8 +217,8 @@ export class AppointmentRowsComponent {
      const startHour = Math.floor(clampedSlotIndex / 4) - 1;  
     const startMinutes = (clampedSlotIndex % 4) * 15;  
 
-     const durationInSlots = Math.ceil(radius  /14 ); // Assuming 50px = 1 hour, adjust accordingly
-
+     const durationInSlots = Math.ceil(radius   ); 
+console.log(radius)
      const endSlotIndex = clampedSlotIndex + durationInSlots; 
     const endClampedSlotIndex = Math.min(endSlotIndex, totalSlots - 1);
     
