@@ -80,7 +80,7 @@ export class SingleTimeComponent implements OnInit {
     this.initialRadius = this.radius;
     this.isResizingBottom = true;
  
-    console.log(this.radius,this.initialRadius)
+    // console.log(this.radius,this.initialRadius)
     this.updateLocalStorage()
 
     event.preventDefault();
@@ -195,7 +195,9 @@ private updateLocalStorage() {
       savedAppointments[index].radius = this.radius; 
       savedAppointments[index].position = this.currentY; 
       localStorage.setItem('appointment', JSON.stringify(savedAppointments));
- setTimeout(()=>{       this.updatePosition(this.currentY, this.radius);
+ setTimeout(()=>{       
+  
+  this.updatePosition(this.currentY, this.radius);
  },500)
  
 }

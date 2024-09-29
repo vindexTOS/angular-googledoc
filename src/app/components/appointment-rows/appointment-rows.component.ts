@@ -16,16 +16,15 @@ import { CalendarType, SetTimeType } from '../../types/calendar-types';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { SingleTimeComponent } from '../single-time/single-time.component';
 import { AppointmentService } from '../../services/appointment.service';
-import { GetLocalAppointmentData } from '../../store/Calendar/Calendar.selector';
+import { GetLocalAppointmentData, GetSelecctedDate } from '../../store/Calendar/Calendar.selector';
 @Component({
   selector: 'app-appointment-rows',
   standalone: true,
   template: `
       <div class="time-slots-container" #container >
       <div style="height: 100px; width:100%;"  >
-   
+ 
           <div class="parent-container"  cdkDrag cdkDragLockAxis="y">
-     
           @for(appointment of  savedAppointments;  track appointment    ; let i = $index ){
          <app-single-time 
              [description]="appointment.description"
@@ -99,69 +98,104 @@ export class AppointmentRowsComponent {
     private store: Store,
     private appointmentService:AppointmentService
   ) {
-     
-
-     this.store.select(GetLocalAppointmentData).subscribe((data) => {
-      this. savedAppointments = data
+    this.store.select(GetLocalAppointmentData).subscribe((appointment) => {
+ 
+      const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
+      let changedData   = appointment.filter((val: any) => val.date === selectedDateString);
+   
+      this.savedAppointments = changedData
+     });
+  
+    this.store.select(GetSelecctedDate).subscribe((date) => {
+      this.selectedCalendar = date;
+      let local = localStorage.getItem("appointment");
+      if (local) {
+        this.savedAppointments = JSON.parse(local);
+        const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
+        this.savedAppointments = this.savedAppointments.filter((val: any) => val.date === selectedDateString);
+        
+      }
+   
     });
+  
+   
+
+
+    
 
    
- 
+
   }
 
  
 
   updateAppointmentPosition(id: number, newY: number, radius: number) {
     this.id = id;
-
+ 
     let local = localStorage.getItem("appointment");
-    if (local) {
-        this.savedAppointments = JSON.parse(local);
-    }
-
-    this.savedAppointments = this.savedAppointments.map((appointment: { id: number }) => {
+    let updatedAppointment = local && JSON.parse(local)
+    updatedAppointment = updatedAppointment .map((appointment: { id: number }) => {
         if (appointment.id === id) {
             return {
                 ...appointment,
                 position: newY,
-                radius: radius // Update radius as well
+                radius: radius  
             };
         }
         return appointment;
     });
 
-    localStorage.setItem('appointment', JSON.stringify(this.savedAppointments));
+    localStorage.setItem('appointment', JSON.stringify(updatedAppointment ));
     this.calculateTimeSlots(newY, radius);
+
+    
+    const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
+   
+    this.savedAppointments =   updatedAppointment .filter((val: any) => val.date === selectedDateString);
+
 }
 
 
-  updateAppointmentTime(  startTime:string,endTime:string){
-    this.savedAppointments = this. savedAppointments.map((appointment: { id: number }) => {
+updateAppointmentTime(startTime: string, endTime: string) {
+  let local = localStorage.getItem("appointment");
+let updatedAppointment = local && JSON.parse(local)
+ updatedAppointment = updatedAppointment .map((appointment: { id: number }) => {
       if (appointment.id === this.id) {
-        return {
-          ...appointment,
-            startTime,
-            endTime 
-        };
+          return {
+              ...appointment,
+              startTime,
+              endTime
+          };
       }
       return appointment;
-    });
-    localStorage.setItem('appointment', JSON.stringify(this.savedAppointments ));
-  }
+  });
+
+   localStorage.setItem('appointment', JSON.stringify(updatedAppointment));
+  // console.log(updatedAppointment)
+   const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
+  this.savedAppointments = updatedAppointment.filter((val: any) => val.date === selectedDateString);
+
+  
+}
 
 
   loadStoredPositions() {
-   this.savedAppointments = JSON.parse(localStorage.getItem('appointment') || '[]');
+    let info = localStorage.getItem('appointment')
+        if(info){
+          const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
+          this.savedAppointments =  JSON.parse(info).filter((val: any) => val.date === selectedDateString);
+      
+        }
  
   }
 
   ngOnInit() {
     this.loadStoredPositions()
     this.generateTimeSlots();
+
+ 
   }
-  ngAfterViewInit() {
-  
-  }
+ 
  
 
 
@@ -183,7 +217,7 @@ export class AppointmentRowsComponent {
   }
 
   openModal(event:any): void {
-    this. onClickRow(event)
+    this.onClickRow(event)
  
     let randomNum = Math.floor(Math.random() * 12)
     let hex = this.appointmentService.colors[ randomNum]
@@ -197,7 +231,9 @@ export class AppointmentRowsComponent {
       if (result) {
         let info = localStorage.getItem('appointment')
         if(info){
-          this.savedAppointments = JSON.parse(info)
+          const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
+          this.savedAppointments =  JSON.parse(info).filter((val: any) => val.date === selectedDateString);
+      
         }
 
       }
@@ -216,9 +252,9 @@ export class AppointmentRowsComponent {
 
      const startHour = Math.floor(clampedSlotIndex / 4) - 1;  
     const startMinutes = (clampedSlotIndex % 4) * 15;  
+  
+     const durationInSlots = Math.ceil(radius >= 666 ? radius / 11:radius >= 300 ? radius/ 12: radius / 13); 
 
-     const durationInSlots = Math.ceil(radius   ); 
-console.log(radius)
      const endSlotIndex = clampedSlotIndex + durationInSlots; 
     const endClampedSlotIndex = Math.min(endSlotIndex, totalSlots - 1);
     

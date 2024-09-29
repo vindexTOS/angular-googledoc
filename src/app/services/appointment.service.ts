@@ -5,21 +5,14 @@ import { Appointment } from '../store/Calendar/Calendar.state';
   providedIn: 'root'
 })
 export class AppointmentService {
+  appointmentData: Appointment[] = [];
+  colors = [
+    "#C74A27", "#2A7D2B", "#2A4B7C", "#C72A6A",
+    "#C7A733", "#2AB5B0", "#5B1F8D", "#C75B27",
+    "#C727A1", "#C7A227", "#2AB67C", "#7FAF27"
+  ];
 
   constructor() { }
-  appointmentData:Appointment[] | any[] = []
-  colors = [
-    "#C74A27", // Darker Red-Orange
-    "#2A7D2B", // Darker Green
-    "#2A4B7C", // Darker Blue
-    "#C72A6A", // Darker Pink
-    "#C7A733", // Darker Yellow
-    "#2AB5B0", // Darker Aqua
-    "#5B1F8D", // Darker Purple
-    "#C75B27", // Darker Orange
-    "#C727A1", // Darker Magenta
-    "#C7A227", // Darker Gold
-    "#2AB67C", // Darker Light Green
-    "#7FAF27"  // Darker Lime Green
-  ];
+
+  
 }
