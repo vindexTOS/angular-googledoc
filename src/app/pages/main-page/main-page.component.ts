@@ -9,7 +9,12 @@ import { AppointmentRowsComponent } from '../../components/appointment-rows/appo
 @Component({
   selector: 'app-main-page',
   standalone: true,
-  imports: [CalendarComponent,  AppointmentModalComponent, AppointmentRowsComponent, ],
+  
+  imports: [
+    CalendarComponent,
+    AppointmentModalComponent,
+    AppointmentRowsComponent,
+  ],
   template: `
   <main class="main">
     <app-calendar></app-calendar>
@@ -20,14 +25,5 @@ import { AppointmentRowsComponent } from '../../components/appointment-rows/appo
   styleUrl: './main-page.component.scss',
 })
 export class MainPageComponent {
-  constructor(
-    
-    private store: Store,
-  ) {}
-  ngOnInit() {
-  
-
-    
-
-  }
+ 
 }

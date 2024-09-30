@@ -3,14 +3,16 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { GetAppointmentData } from '../../store/Calendar/Calendar.actions';
-import { EditAppointmentModalComponent } from '../../edit-appointment-modal/edit-appointment-modal.component';
+import { EditAppointmentModalComponent } from '../edit-appointment-modal/edit-appointment-modal.component';
 import { AppointmentService } from '../../services/appointment.service';
+import { Appointment } from '../../store/Calendar/Calendar.state';
 
 @Component({
   selector: 'app-single-time',
   standalone: true,
   template: `
      <div
+     (contextmenu)="handleRightClick($event)"
       class="chadchad"
       #drag="cdkDrag"
       cdkDrag
@@ -34,12 +36,31 @@ import { AppointmentService } from '../../services/appointment.service';
 
       <div class="resizer top" (mousedown)="onMouseDownTop($event)"></div>
       <div class="resizer bottom" (mousedown)="onMouseDownBottom($event)"></div>
+
+@if(contextMenuVisible){
+  <div
+ 
+  class="context-menu"
+ 
+  (click)="hideContextMenu()"
+>
+  <ul>
+    <li (click)="deleteItem()">Delete Item</li>
+  </ul>
+</div>
+}
+   
+
     </div>
   `,
   styleUrls: ['./single-time.component.scss'],
   imports: [CdkDrag],
 })
 export class SingleTimeComponent implements OnInit {
+
+
+
+
   private isResizingTop = false;
   private isResizingBottom = false;
   private initialRadius = 0;
@@ -47,6 +68,9 @@ export class SingleTimeComponent implements OnInit {
   private initialTop: number = 0;
  
   constructor(private dialog: MatDialog, private store: Store, private appointmentService:AppointmentService) {}
+
+  contextMenuVisible = false;
+  contextMenuPosition = { x: 0, y: 0 };  
 
   @Input() Yangle: number = 0; 
   @Input() title: string = '';
@@ -58,10 +82,25 @@ export class SingleTimeComponent implements OnInit {
   @Input() radius: number = 50; 
 
   @Input() updatePosition: (newY: number, radius: number) => void = () => {};
-
+  @Input() deleteItem: () => void = () => {};
   currentY: number = 0;
   dragStartY: number = 0;
+  handleRightClick(event: MouseEvent) {
+    event.preventDefault();  
 
+ 
+    this.contextMenuPosition.x = event.clientX;
+    this.contextMenuPosition.y = event.clientY;
+    
+     
+    this.contextMenuVisible = true;
+  }
+
+  hideContextMenu() {
+    this.contextMenuVisible = false;
+  }
+
+ 
   onMouseDownTop(event: MouseEvent) {
     event.stopPropagation();
     this.startY = event.clientY;

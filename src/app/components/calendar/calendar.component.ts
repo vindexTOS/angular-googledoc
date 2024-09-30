@@ -25,6 +25,7 @@ import { SelectCalendarDate } from '../../store/Calendar/Calendar.actions';
     MatButtonModule,
     MatSnackBarModule,
   ],
+  
   template: `
     <div class="calendar-container">
       <mat-calendar [(selected)]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>

@@ -17,6 +17,7 @@ import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { SingleTimeComponent } from '../single-time/single-time.component';
 import { AppointmentService } from '../../services/appointment.service';
 import { GetLocalAppointmentData, GetSelecctedDate } from '../../store/Calendar/Calendar.selector';
+import { Appointment } from '../../store/Calendar/Calendar.state';
 @Component({
   selector: 'app-appointment-rows',
   standalone: true,
@@ -34,28 +35,23 @@ import { GetLocalAppointmentData, GetSelecctedDate } from '../../store/Calendar/
         [endTime]="appointment.endTime"
         [color]="appointment.color"
         [id]="appointment.id"
-            [radius]="appointment.radius"
-       [updatePosition]="updateAppointmentPosition.bind(this, appointment.id)">
+        [radius]="appointment.radius"
+        [updatePosition]="updateAppointmentPosition.bind(this, appointment.id)"
+         [deleteItem]="deleteItem.bind(this, appointment.id)"
+       >
      </app-single-time>
      }
-  
-  <div class="square"   [ngStyle]="overLayStyle">
-  <div class='time-wrapper'  >  
- 
-       
-        </div>
-  
-  </div>
-
-</div>
-     
-      </div> 
+     </div> 
       @for ( slot of timeSlots; track slot ;let i = $index) {
-        <div  (click)=" openModal($event)"  class="time-slot">
+        <div   (click)=" openModal($event)"  class="time-slot">
           {{slot}}
         </div>
       }
     </div>
+
+</div>
+     
+    
   `,
   styleUrls: ['./appointment-rows.component.scss'],
   imports: [
@@ -82,7 +78,7 @@ export class AppointmentRowsComponent {
   dataFromLocalStorage: CalendarType[] = [];
   startTime = '';
   endTime = '';
-   id:number = 0;
+  id:number = 0;
  
 
   savedAppointments: any = [
@@ -117,17 +113,16 @@ export class AppointmentRowsComponent {
       }
    
     });
-  
-   
-
-
-    
-
-   
-
   }
-
  
+  deleteItem(id: number) {
+    let info = localStorage.getItem('appointment');
+    if (info) {
+      let arr = JSON.parse(info).filter((val: Appointment) => val.id !== id);
+      localStorage.setItem('appointment', JSON.stringify(arr));
+      this.loadStoredPositions(); 
+    }
+  }
 
   updateAppointmentPosition(id: number, newY: number, radius: number) {
     this.id = id;
@@ -159,6 +154,7 @@ export class AppointmentRowsComponent {
 updateAppointmentTime(startTime: string, endTime: string) {
   let local = localStorage.getItem("appointment");
 let updatedAppointment = local && JSON.parse(local)
+ 
  updatedAppointment = updatedAppointment .map((appointment: { id: number }) => {
       if (appointment.id === this.id) {
           return {
@@ -178,16 +174,19 @@ let updatedAppointment = local && JSON.parse(local)
   
 }
 
+loadStoredPositions() {
+  let info = localStorage.getItem('appointment');
+  if (info) {
+    this.selectedCalendar = !this.selectedCalendar ? new Date() : this.selectedCalendar;
 
-  loadStoredPositions() {
-    let info = localStorage.getItem('appointment')
-        if(info){
-          const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
-          this.savedAppointments =  JSON.parse(info).filter((val: any) => val.date === selectedDateString);
-      
-        }
- 
+    const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
+    this.savedAppointments = JSON.parse(info).filter((val: any) => {
+      console.log(val.date, selectedDateString);
+      return val.date === selectedDateString; 
+    });
+    console.log(this.savedAppointments);
   }
+}
 
   ngOnInit() {
     this.loadStoredPositions()
@@ -202,7 +201,7 @@ let updatedAppointment = local && JSON.parse(local)
   private generateTimeSlots(): void {
     this.timeSlots = [];
     
-    const totalHours = 24; // 0-23 hours
+    const totalHours = 24;  
     
     for (let hour = 0; hour < totalHours; hour++) {
       const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
@@ -211,7 +210,7 @@ let updatedAppointment = local && JSON.parse(local)
   }
   onClickRow(event: MouseEvent ) {
     let newY = event.pageY  -430
-    this.calculateTimeSlots(newY, 50)
+    this.calculateTimeSlots(newY, 44)
   
 
   }
@@ -244,26 +243,41 @@ let updatedAppointment = local && JSON.parse(local)
     const startY = 80;  
     const endY = 1150;  
     const totalHours = 24; 
-    const totalSlots = totalHours * 4;  
-    const pixelIncrement = (endY - startY) / (totalSlots - 1); 
+    const pixelIncrement = 44.58; // Each hour is represented by ~44.58px
 
-     const slotIndex = Math.floor((newY - startY) / pixelIncrement);
-    const clampedSlotIndex = Math.max(0, Math.min(slotIndex, totalSlots - 1));
+    // Calculate the time offset (in hours) based on the newY position
+    const timeOffset = (newY - startY) / pixelIncrement; 
+    const clampedTimeOffset = Math.max(0, Math.min(timeOffset, totalHours - 1));
 
-     const startHour = Math.floor(clampedSlotIndex / 4) - 1;  
-    const startMinutes = (clampedSlotIndex % 4) * 15;  
-  
-     const durationInSlots = Math.ceil(radius >= 666 ? radius / 11:radius >= 300 ? radius/ 12: radius / 13); 
+    // Calculate fractional hours and minutes for start time
+    let startHour = Math.floor(clampedTimeOffset);  
+let startMinutes = Math.round((clampedTimeOffset % 1) * 60);  // Convert fractional hour to minutes
 
-     const endSlotIndex = clampedSlotIndex + durationInSlots; 
-    const endClampedSlotIndex = Math.min(endSlotIndex, totalSlots - 1);
-    
-    const endHour = Math.floor(endClampedSlotIndex / 4);
-    const endMinutes = (endClampedSlotIndex % 4) * 15;
+    // Calculate the duration in hours based on the radius
+    const durationInHours = radius / pixelIncrement; 
+    const endClampedTimeOffset = Math.min(clampedTimeOffset + durationInHours, totalHours);
 
-     this.startTime = `${startHour <= 0 ? "0" : startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
+    // Calculate end time as fractional hours and minutes
+   let endHour = Math.floor(endClampedTimeOffset);
+    let  endMinutes = Math.round((endClampedTimeOffset % 1) * 60);  // Convert fractional hour to minutes
+
+    // Correct the times to handle mid-hour transitions:
+    // If the start minutes are close to a full hour (like 59 minutes), the rounding may cause issues.
+    if (startMinutes >= 60) {
+        startMinutes = 0;
+        startHour += 1;
+    }
+
+    if (endMinutes >= 60) {
+        endMinutes = 0;
+        endHour += 1;
+    }
+
+    // Ensure times are properly formatted (leading zeros for single digits)
+    this.startTime = `${startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
     this.endTime = `${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
 
+    // Dispatch the time and position to the store
     const setTimePayload = {
         setTime: {
             startTime: this.startTime,
@@ -275,6 +289,5 @@ let updatedAppointment = local && JSON.parse(local)
     this.store.dispatch(SetTimeAction(setTimePayload));
     this.store.dispatch(SetPosition({ position: newY }));
 }
-  
 
 }
