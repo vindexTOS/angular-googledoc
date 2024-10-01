@@ -52,7 +52,10 @@ export class CalendarComponent {
 
   onDateSelected(date: Date | null): void {
     if (date) {
-      this.store.dispatch(SelectCalendarDate({ selectedCalendarDate: date }));
+       const selectedDateTime = new Date(date);
+      selectedDateTime.setHours(12, 0, 0, 0); // Set to noon (12:00:00.000)
+  
+       this.store.dispatch(SelectCalendarDate({ selectedCalendarDate: selectedDateTime }));
     }
   }
 

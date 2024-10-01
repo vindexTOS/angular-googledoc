@@ -24,7 +24,7 @@ import { Appointment } from '../../store/Calendar/Calendar.state';
   template: `
       <div class="time-slots-container" #container >
       <div style="height: 100px; width:100%;"  >
- 
+  {{ selectedCalendar}}
           <div class="parent-container"  cdkDrag cdkDragLockAxis="y">
           @for(appointment of  savedAppointments;  track appointment    ; let i = $index ){
          <app-single-time 

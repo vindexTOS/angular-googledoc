@@ -84,15 +84,22 @@ export class CalendarModalComponent {
       this.selectedCalendar = data;
     });
   }
+
+  formatDate(date:Date) {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');  
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;  
+  }
+
   onSubmit(): void {
-    console.log("Form Value:", this.form.value);
-    console.log("Form Validity:", this.form.valid);
+ 
   
     if (this.form.valid) {
       const appointmentData = {
         title: this.form.get('title')?.value,
         description: this.form.get('description')?.value,
-        date: this.selectedCalendar.toISOString().slice(0, 10),
+        date: this.formatDate(this.selectedCalendar),
         startTime: this.form.get('startTime')?.value,  
         endTime: this.form.get('endTime')?.value,  
         position: this.position,
@@ -100,7 +107,7 @@ export class CalendarModalComponent {
         id: this.data.id || Math.floor(Math.random() * 3000),
         radius:44
       };
-  
+   console.log(this.selectedCalendar, this.selectedCalendar.toISOString().slice(0, 10))
       const existingData = localStorage.getItem('appointment');
       let calendarData = existingData ? JSON.parse(existingData) : [];
   
