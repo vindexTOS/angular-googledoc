@@ -169,6 +169,8 @@ ngOnInit() {
   
 }
 
+
+
 onDragStart() {
   
  
@@ -180,7 +182,7 @@ onDragEnd(event: any) {
    
   // this.Yangle = this.currentY;
   let innerState  = this.dragStartY + event.distance.y;
- 
+ console.log(innerState)
   this.updatePosition(innerState ,this.radius);
      
 }
