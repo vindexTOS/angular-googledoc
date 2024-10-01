@@ -117,11 +117,15 @@ export class AppointmentRowsComponent {
   }
  
   deleteItem(id: number) {
-    let info = localStorage.getItem('appointment');
+    const info = localStorage.getItem('appointment');
     if (info) {
-      let arr = JSON.parse(info).filter((val: Appointment) => val.id !== id);
-      localStorage.setItem('appointment', JSON.stringify(arr));
-      this.loadStoredPositions(); 
+      let appointments = JSON.parse(info);
+  
+       const updatedAppointments = appointments.filter((val: Appointment) => val.id !== id);
+  
+       localStorage.setItem('appointment', JSON.stringify(updatedAppointments));
+  
+       this.loadStoredPositions();
     }
   }
 
@@ -159,11 +163,9 @@ updateAppointmentTime(startTime: string, endTime: string) {
   if (local) {
     updatedAppointment = JSON.parse(local);
 
-    // Log the correct startTime and endTime for debugging
-    console.log('Start:', startTime, 'End:', endTime);
+     console.log('Start:', startTime, 'End:', endTime);
 
-    // Update the specific appointment based on its ID
-    updatedAppointment = updatedAppointment.map((appointment: { id: number }) => {
+     updatedAppointment = updatedAppointment.map((appointment: { id: number }) => {
       if (appointment.id === this.id) {
         return {
           ...appointment,
@@ -174,17 +176,14 @@ updateAppointmentTime(startTime: string, endTime: string) {
       return appointment;
     });
 
-    // Save the updated appointments to localStorage
-    localStorage.setItem('appointment', JSON.stringify(updatedAppointment));
+     localStorage.setItem('appointment', JSON.stringify(updatedAppointment));
 
-    // Force reactivity or state sync by using setTimeout or similar to wait for the DOM to update
-    setTimeout(() => {
+     setTimeout(() => {
       const selectedDateString = this.selectedCalendar.toISOString().split('T')[0];
       this.savedAppointments = updatedAppointment.filter((val: any) => val.date === selectedDateString);
 
-      // Log to check if appointments are updated immediately
-      console.log('Filtered Appointments:', this.savedAppointments);
-    }, 0);  // 0ms delay to ensure it runs in the next event loop
+       console.log('Filtered Appointments:', this.savedAppointments);
+    }, 0);   
   }
 }
 loadStoredPositions() {
@@ -254,69 +253,59 @@ loadStoredPositions() {
   private calculateTimeSlots(newY: number, radius: number): void {
     const startY = 80;  
     const totalHours = 24; 
-    const pixelIncrement = 44.58; // Each hour is represented by ~44.58px
+    const pixelIncrement = 44.58;  
 
-    // Calculate the time offset in hours based on the newY position
-    const timeOffset = (newY - startY) / pixelIncrement; // Time offset in hours
+     const timeOffset = (newY - startY) / pixelIncrement;  
     const clampedTimeOffset = Math.max(0, Math.min(timeOffset, totalHours - 1));
 
-    // Calculate the start hour and minutes
-    let startHour = Math.floor(clampedTimeOffset);  
-    let startMinutes = Math.round((clampedTimeOffset % 1) * 60); // Convert fractional hour to minutes
+     let startHour = Math.floor(clampedTimeOffset);  
+    let startMinutes = Math.round((clampedTimeOffset % 1) * 60); 
 
-    // Correct the hour if rounding caused the minutes to "overflow" into the next hour
-    if (startMinutes === 60) {
+     if (startMinutes === 60) {
         startHour += 1;
         startMinutes = 0;
     }
 
-    // Calculate the duration in hours based on the radius
-    let durationInHours = radius / pixelIncrement; 
+     let durationInHours = radius / pixelIncrement; 
 
-    // Adjust duration based on radius threshold
-    if (radius > 232) {
+     if (radius > 232) {
         const excessRadius = radius - 232;
 
-        // Limit additional minutes for the first segment (below 16 hours)
-        if (clampedTimeOffset < 16) {
-            const additionalMinutes = Math.floor(excessRadius / 44.58) * 10; // 10 minutes for each additional hour
-            durationInHours += additionalMinutes / 60; // Convert minutes back to hours
+         if (clampedTimeOffset < 16) {
+            const additionalMinutes = Math.floor(excessRadius / 44.58) * 10;  
+            durationInHours += additionalMinutes / 60;  
         } 
-        // Avoid adding extra time beyond 650 radius
-        if (radius > 650) {
-            durationInHours -= 0.5; // Reduce duration by half an hour if radius exceeds 650 pixels
+         if (radius > 650) {
+            durationInHours -= 0.5; 
         }
     }
 
-    // Calculate the end total hours
-    let endTotalHours = clampedTimeOffset + durationInHours;
+     let endTotalHours = clampedTimeOffset + durationInHours;
 
-    // If endTotalHours exceeds 24, adjust it
-    if (endTotalHours >= totalHours) {
-        endTotalHours = totalHours - 0.001; // Prevents it from being capped at exactly 24 hours
+     if (endTotalHours >= totalHours) {
+        endTotalHours = totalHours - 0.001;  
     }
 
-    // Calculate the end hour and minutes
-    let endHour = Math.floor(endTotalHours);
-    let endMinutes = Math.round((endTotalHours % 1) * 60); // Convert fractional hour to minutes
+     let endHour = Math.floor(endTotalHours);
+    let endMinutes = Math.round((endTotalHours % 1) * 60);  
 
-    // Correct the hour if rounding caused the minutes to "overflow" into the next hour
+  
     if (endMinutes === 60) {
         endHour += 1;
         endMinutes = 0;
     }
 
-    // Ensure the hours do not exceed 23
+ 
     if (endHour >= totalHours) {
-        endHour = totalHours - 1; // Cap to 23:00
-        endMinutes = 59; // Max minutes
+        endHour = totalHours - 1;  
+        endMinutes = 59;  
     }
 
-    // Format the start and end times
+     
     this.startTime = `${startHour.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
     this.endTime = `${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
 
-    // Dispatch the time and position to the store
+ 
     const setTimePayload = {
         setTime: {
             startTime: this.startTime,
